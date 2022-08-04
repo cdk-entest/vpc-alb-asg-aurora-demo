@@ -91,6 +91,9 @@ const cluster = new aws_rds.DatabaseCluster(this, "IcaDatabase", {
     securityGroups: [sg],
   },
   deletionProtection: false,
+  // 1 - mean single AZ
+  // 2+ mean multil AZ, single master, multiple read replicas
+  // engine mode multi-master - cfnDBCluster
   instances: 1,
 });
 ```
