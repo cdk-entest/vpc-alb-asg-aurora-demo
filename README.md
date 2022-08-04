@@ -16,6 +16,7 @@ date: 2022-07-24
 - Autoscaling stratergy (not yet here )
 - [Aurora multi AZ](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.html)
 - [Aurora multi master](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.CfnDBCluster.html#enginemode)
+- [Read only endpoint](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.Endpoints.html)
 
 ## Architectrure
 
