@@ -14,12 +14,14 @@ date: 2022-07-24
 - Load balancer and auto scaling group
 - Aurora multiple AZ
 - Autoscaling stratergy (not yet here )
+- [Aurora multi master](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.CfnDBCluster.html#enginemode)
+
 
 ## Architectrure
 
 ![aws_devops-ica drawio](https://user-images.githubusercontent.com/20411077/170316806-737ff153-23df-456c-bee4-2812ab5e1b8a.png)
 
-## Aurora cluster stack
+## VPC Stack
 
 create a new vpc
 
@@ -49,6 +51,8 @@ const vpc = new aws_ec2.Vpc(this, "VpcForAuroraDemo", {
 });
 ```
 
+## Aurora Cluster Stack
+
 security group for aurora
 
 ```tsx
@@ -65,7 +69,7 @@ sg.addIngressRule(
 );
 ```
 
-aurora cluster
+aurora cluster: single AZ, single master (write/read). There are advanced options for high performance [multi-master](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-multi-master.html) and [multi-az](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.html)
 
 ```tsx
 const cluster = new aws_rds.DatabaseCluster(this, "IcaDatabase", {
@@ -87,7 +91,7 @@ const cluster = new aws_rds.DatabaseCluster(this, "IcaDatabase", {
     securityGroups: [sg],
   },
   deletionProtection: false,
-  instances: 1,
+  instances: 2,
 });
 ```
 
