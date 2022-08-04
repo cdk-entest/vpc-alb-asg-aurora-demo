@@ -91,7 +91,7 @@ const cluster = new aws_rds.DatabaseCluster(this, "IcaDatabase", {
     securityGroups: [sg],
   },
   deletionProtection: false,
-  instances: 2,
+  instances: 1,
 });
 ```
 
