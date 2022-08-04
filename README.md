@@ -228,15 +228,13 @@ get DB credentials from secret management
 
 ```python
 # sm client
-secrete_client = boto3.client('secretsmanager',
-                                region_name=REGION)
+secrete_client = boto3.client('secretsmanager',region_name=REGION)
 
 # get secret string
-secret = secrete_client.get_secret_value(
-    SecretId=SECRET_ID
-)
+secret = secrete_client.get_secret_value(SecretId=SECRET_ID)
 ```
 
+In this simple case single master (read/write), use the master (read/write) endpoint for both read and write. If there are multiple read replica, can use the -ro- read only endpoints for higher preformance read.
 connector
 
 ```python
