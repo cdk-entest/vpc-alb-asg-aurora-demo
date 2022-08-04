@@ -21,56 +21,77 @@ date: 2022-07-24
 
 ## Aurora cluster stack
 
-get existed VPC
+create a new vpc
 
 ```tsx
-const vpc = aws_ec2.Vpc.fromLookup(this, "ExistedVpc", {
-  region: props.region,
-  vpcId: props.vpcId,
+const vpc = new aws_ec2.Vpc(this, "VpcForAuroraDemo", {
+  vpcName: props.vpcName,
+  cidr: props.cidir,
+  enableDnsHostnames: true,
+  enableDnsSupport: true,
+  subnetConfiguration: [
+    {
+      cidrMask: 24,
+      name: "PublicSubnet",
+      subnetType: aws_ec2.SubnetType.PUBLIC,
+    },
+    {
+      cidrMask: 24,
+      name: "PrivateSubnet",
+      subnetType: aws_ec2.SubnetType.PRIVATE_ISOLATED,
+    },
+    {
+      cidrMask: 24,
+      name: "PrivateSubnetWithNat",
+      subnetType: aws_ec2.SubnetType.PRIVATE_WITH_NAT,
+    },
+  ],
 });
+```
+
+security group for aurora
+
+```tsx
+const sg = new aws_ec2.SecurityGroup(this, "SecurityGroupForSsmEndpoint", {
+  vpc,
+  description: "Allow port 443 from private instance",
+  allowAllOutbound: true,
+});
+
+sg.addIngressRule(
+  aws_ec2.Peer.anyIpv4(),
+  aws_ec2.Port.tcp(3306),
+  "allow HTTPS from private ec2 "
+);
 ```
 
 aurora cluster
 
 ```tsx
-const cluster = new aws_rds.DatabaseCluster(
-      this,
-      "IcaDatabase",
-      {
-        removalPolicy: RemovalPolicy.DESTROY,
-        defaultDatabaseName: props.dbName,
-        engine: aws_rds.DatabaseClusterEngine.auroraMysql({
-          version: aws_rds.AuroraMysqlEngineVersion.VER_2_08_1,
-        }),
-        credentials:
-          aws_rds.Credentials.fromGeneratedSecret("admin"),
-        instanceProps: {
-          instanceType: aws_ec2.InstanceType.of(
-            aws_ec2.InstanceClass.BURSTABLE2,
-            aws_ec2.InstanceSize.SMALL
-          ),
-          vpcSubnets: {
-            subnetType: aws_ec2.SubnetType.PUBLIC,
-          },
-          vpc,
-        },
-      }
-    );
-  }
+const cluster = new aws_rds.DatabaseCluster(this, "IcaDatabase", {
+  removalPolicy: RemovalPolicy.DESTROY,
+  defaultDatabaseName: props.dbName,
+  engine: aws_rds.DatabaseClusterEngine.auroraMysql({
+    version: aws_rds.AuroraMysqlEngineVersion.VER_2_08_1,
+  }),
+  credentials: aws_rds.Credentials.fromGeneratedSecret("admin"),
+  instanceProps: {
+    instanceType: aws_ec2.InstanceType.of(
+      aws_ec2.InstanceClass.BURSTABLE2,
+      aws_ec2.InstanceSize.SMALL
+    ),
+    vpcSubnets: {
+      subnetType: aws_ec2.SubnetType.PUBLIC,
+    },
+    vpc,
+    securityGroups: [sg],
+  },
+  deletionProtection: false,
+  instances: 1,
+});
 ```
 
 ## Application load balancer stack
-
-get existed VPC
-
-```tsx
-const vpc = aws_ec2.Vpc.fromVpcAttributes(this, "ExistedVpc", {
-  availabilityZones: props.availabilityZones,
-  privateSubnetIds: props.privateSubnetIds,
-  publicSubnetIds: props.publicSubnetIds,
-  vpcId: props.vpcId,
-});
-```
 
 role for EC2 to download from S3, access SSM, and Secret Mangement
 
@@ -79,7 +100,11 @@ const role = new aws_iam.Role(this, `RoleForEc2AsgToAccessSSM`, {
   roleName: `RoleForEc2AsgToAccessSSM-${this.region}`,
   assumedBy: new aws_iam.ServicePrincipal("ec2.amazonaws.com"),
 });
+```
 
+add policy for s3 to download userData-web and read db credentials from secrete maanger
+
+```tsx
 role.attachInlinePolicy(
   new aws_iam.Policy(this, `PolicyForEc2AsgToReadS3`, {
     policyName: `PolicyForEc2AsgToReadS3-${this.region}`,
@@ -97,7 +122,11 @@ role.attachInlinePolicy(
     ],
   })
 );
+```
 
+policy for system manager connection
+
+```tsx
 role.addManagedPolicy(
   aws_iam.ManagedPolicy.fromManagedPolicyArn(
     this,
@@ -123,11 +152,22 @@ const asg = new aws_autoscaling.AutoScalingGroup(this, "ASG", {
   minCapacity: 2,
   maxCapacity: 3,
   role: role,
+  vpcSubnets: {
+    subnets: [
+      aws_ec2.Subnet.fromSubnetId(
+        this,
+        "PrivateSubnetWithNat1",
+        privateSubnetIds[2]
+      ),
+      aws_ec2.Subnet.fromSubnetId(
+        this,
+        "PrivateSubnetWithNat2",
+        privateSubnetIds[3]
+      ),
+    ],
+  },
 });
-
-asg.addUserData(
-  fs.readFileSync("./lib/script/userdata-ap-southeast-1.sh", "utf8")
-);
+asg.addUserData(fs.readFileSync("./lib/script/user-data.sh", "utf8"));
 ```
 
 application load balancer
@@ -164,9 +204,8 @@ asg.scaleOnRequestCount("AmodestLoad", {
 
 ## UserData
 
-#!/bin/bash
-
 ```shell
+#!/bin/bash
 cd ~
 mkdir web
 cd web
