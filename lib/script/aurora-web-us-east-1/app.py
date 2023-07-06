@@ -5,7 +5,7 @@ from flask import Flask, render_template
 from flask_table import Table, Col
 
 # scret manager => better in environment vars
-SECRET_ID = "arn:aws:secretsmanager:"
+SECRET_ID = "arn:aws:secretsmanager:us-east-1:392194582387:secret:AuroraDbStackIcaDatabaseSec-rEIc0yNQiqeT-876u2Z"
 
 
 # region

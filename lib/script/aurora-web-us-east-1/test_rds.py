@@ -16,7 +16,7 @@ import names
 import random
 
 # scret manager => better in environment vars
-SECRET_ID = "arn:aws:secretsmanager:xxx"
+SECRET_ID = "arn:aws:secretsmanager:us-east-1:392194582387:secret:AuroraDbStackIcaDatabaseSec-rEIc0yNQiqeT-876u2Z"
 
 # region
 REGION = "us-east-1"
@@ -117,6 +117,6 @@ def drop_table() -> None:
 
 
 if __name__ == "__main__":
-    create_table()
-    # fetch_data()
+    # create_table()
+    fetch_data()
     # drop_table()
