@@ -120,10 +120,10 @@ export class AuroraDbStack extends Stack {
       }),
       instanceUpdateBehaviour: aws_rds.InstanceUpdateBehaviour.ROLLING,
       // storageType: aws_rds.DBClusterStorageType.AURORA_IOPT1,
-      backup: {
-        retention: Duration.days(7),
-        preferredWindow: "16:00-16:30",
-      },
+      // backup: {
+      //   retention: Duration.days(7),
+      //   preferredWindow: "16:00-16:30",
+      // },
       deletionProtection: false,
       removalPolicy: RemovalPolicy.DESTROY,
       // ========================= NEW ==============================
