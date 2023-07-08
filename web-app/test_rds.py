@@ -1,13 +1,15 @@
-"""
-Hello Aurora RDS 
-0. check aurora security group allow EC2 from this vscode "sg-0e936e710434472f5"
-1. create a connector 
-2. create tables 
-3. show tables
-4. insert datat into tables 
-5. query 
-"""
-
+# =============================================================================
+# author: haimtran     | created date: 20/06/2022
+# 1. create connector
+# 2. create tables 
+# 3. show tables 
+# 4. write data to tables 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# updated date: 07/07/2023
+# 1. get region and secret id from enviornment variables 
+# 2. hard code connection when not avaiable from secret values
+# =============================================================================
+import os
 import datetime
 import mysql.connector
 import boto3
@@ -15,11 +17,13 @@ import json
 import names
 import random
 
-# scret manager => better in environment vars
-SECRET_ID = "rds!cluster-9f91a71d-7918-4dc4-9b4c-4754a2d39f8e"
-
-# region
-REGION = "ap-southeast-1"
+# secret and region
+try:
+    SECRET_ID = os.environ["SECRET_ID"]
+    REGION = os.environ["REGION"]
+except:
+    SECRET_ID = "rds!cluster-9f91a71d-7918-4dc4-9b4c-4754a2d39f8e"
+    REGION = "ap-southeast-1"
 
 # sm client
 secrete_client = boto3.client("secretsmanager", region_name=REGION)
