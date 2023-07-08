@@ -187,7 +187,7 @@ export class AuroraDbStack extends Stack {
     });
 
     // user data
-    publicEc2.addUserData(fs.readFileSync("./lib/script/user-data.sh", "utf8"));
+    publicEc2.addUserData(fs.readFileSync("./lib/script/user-data-2.sh", "utf8"));
 
     // output
     new CfnOutput(this, "DbCredentialSecretArn", {
