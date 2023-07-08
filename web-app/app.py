@@ -11,6 +11,12 @@ import json
 from flask import Flask, render_template
 from flask_table import Table, Col
 
+# database connection 
+DB_HOST = "database-1.cluster-ckcjxpoafmdf.ap-southeast-1.rds.amazonaws.com"
+DB_PORT = 3306
+DB_NAME = "covid"
+
+# secret and region
 try:
     SECRET_ID = os.environ["SECRET_ID"]
     REGION = os.environ["REGION"]
@@ -53,6 +59,14 @@ def conect_db():
     secret = secrete_client.get_secret_value(SecretId=SECRET_ID)
     # parse db information
     secret_dic = json.loads(secret["SecretString"])
+    # 
+    # if host, dbname, port not in the dict 
+    if ("port" not in secret_dic):
+        secret_dic["port"] = DB_PORT
+    if ("host" not in secret_dic):
+        secret_dic["host"] = DB_HOST
+    if ("dbname" not in secret_dic):
+        secret_dic["dbname"] = DB_NAME
     # db connector
     conn = mysql.connector.connect(
         host=secret_dic["host"],
