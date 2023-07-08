@@ -1,12 +1,9 @@
 ---
-title: Chakra UI Hackathon 22’ Recap
-description:
-  Last month we had the first-ever Chakra UI Hackathon, which we tagged the
-  Chakrathon 22'. The Hackathon was held from May 3rd to May 20th, 2022, with
-  participants from various parts of the world involved.
-author: estheragbaje
+title: aurora, alb and autoscaling
+description: high performance app with aurora, alb and autoscaling
+author: haimtran
 publishedDate: 06/23/2022
-date: 2022-07-24
+date: 2022-06-23
 ---
 
 ## Introduction
