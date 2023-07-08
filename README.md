@@ -8,6 +8,8 @@ date: 2022-06-23
 
 ## Introduction
 
+[GitHub] this note shows basically how to develop a high performance backend app using auto scaling, application load balancer, and aurora 
+
 - Load balancer and auto scaling group
 - Aurora multiple AZ
 - Autoscaling stratergy (not yet here )
@@ -297,7 +299,7 @@ stmt_select = "SELECT id, name, age, time FROM employees ORDER BY id"
 
 - [aurora endpoint management](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.Endpoints.html)
 
-- [aurora deep dive slide](j)
+- [aurora deep dive slide](https://d2cvlmmg8c0xrp.cloudfront.net/book/modernize-your-databases-with-amazon-aurora-mar-2021.pdf)
 
 - [aurora dns failover proxy](https://aws.amazon.com/blogs/database/improve-application-availability-on-amazon-aurora/)
 
