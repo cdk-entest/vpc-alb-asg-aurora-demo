@@ -56,6 +56,9 @@ const server = new WebServerStack(app, "WebServerAurora", {
 // load balancer 
 const alb = new ApplicationLoadBalancerStack(app, "ApplicationStack", {
   vpc: network.vpc, 
+  asgRole: role.asgRole, 
+  albSG: network.albSG, 
+  asgSG: network.asgSG, 
   env: {
     region: REGION, 
     account: process.env.CDK_DEFAULT_ACCOUNT
