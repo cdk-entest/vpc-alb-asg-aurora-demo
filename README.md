@@ -8,7 +8,7 @@ date: 2022-06-23
 
 ## Introduction
 
-[GitHub] this note shows basically how to develop a high performance backend app using auto scaling, application load balancer, and aurora 
+[GitHub](https://github.com/cdk-entest/vpc-alb-asg-aurora-demo/tree/main) this note shows basically how to develop a high performance backend app using auto scaling, application load balancer, and aurora 
 
 - Load balancer and auto scaling group
 - Aurora multiple AZ
