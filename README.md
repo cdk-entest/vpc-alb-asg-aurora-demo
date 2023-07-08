@@ -19,9 +19,9 @@ date: 2022-06-23
 
 ![aws_devops-ica drawio](https://user-images.githubusercontent.com/20411077/170316806-737ff153-23df-456c-bee4-2812ab5e1b8a.png)
 
-## VPC Stack
+## Network Stack
 
-create a new vpc
+Let create a new vpc
 
 ```tsx
 const vpc = new aws_ec2.Vpc(this, "VpcForAuroraDemo", {
@@ -49,9 +49,9 @@ const vpc = new aws_ec2.Vpc(this, "VpcForAuroraDemo", {
 });
 ```
 
-## Aurora Cluster Stack
+## Aurora Cluster 
 
-security group for aurora
+Let create a security group for aurora
 
 ```tsx
 const sg = new aws_ec2.SecurityGroup(this, "SecurityGroupForSsmEndpoint", {
@@ -96,9 +96,9 @@ const cluster = new aws_rds.DatabaseCluster(this, "IcaDatabase", {
 });
 ```
 
-## Application load balancer stack
+## Application Load Balancer
 
-role for EC2 to download from S3, access SSM, and Secret Mangement
+Let create a iam role for EC2 to download from S3, access SSM, and Secret Mangement
 
 ```tsx
 const role = new aws_iam.Role(this, `RoleForEc2AsgToAccessSSM`, {
@@ -207,7 +207,9 @@ asg.scaleOnRequestCount("AmodestLoad", {
 });
 ```
 
-## UserData
+## User Data 
+
+userdata-1 which is a simple web downloaded from s3 
 
 ```shell
 #!/bin/bash
@@ -220,9 +222,23 @@ sudo python3 -m pip install -r requirements.txt
 sudo python3 app.py
 ```
 
-## Mysql connector python
+userdata-2 which is a simple web downloaded from github 
 
-get DB credentials from secret management
+```bash 
+#!/bin/bash
+# kill -9 $(lsof -t -i:8080)
+export REGION=ap-southeast-1
+wget https://github.com/cdk-entest/vpc-alb-asg-aurora-demo/archive/refs/heads/main.zip
+unzip main.zip 
+cd vpc-alb-asg-aurora-demo-main/
+python3 -m pip install -r requirements.txt
+cd web-app
+python3 -m app
+```
+
+## Database Connection 
+
+Let get DB credentials from secret management
 
 ```python
 # sm client
@@ -274,3 +290,19 @@ stmt_select = "SELECT id, name, age, time FROM employees ORDER BY id"
     for row in cur.fetchall():
         print(row)
 ```
+
+## Reference 
+
+- [aurora paper](https://www.amazon.science/publications/amazon-aurora-design-considerations-for-high-throughput-cloud-native-relational-databases)
+
+- [aurora endpoint management](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.Endpoints.html)
+
+- [aurora deep dive slide](j)
+
+- [aurora dns failover proxy](https://aws.amazon.com/blogs/database/improve-application-availability-on-amazon-aurora/)
+
+- [aurora admin handsbook](https://docs.aws.amazon.com/whitepapers/latest/amazon-aurora-mysql-db-admin-handbook/amazon-aurora-mysql-db-admin-handbook.html)
+
+- [aurora cluster docs](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.html)
+
+- [aurora quorum sync](https://aws.amazon.com/blogs/database/amazon-aurora-under-the-hood-quorum-and-correlated-failure/)
