@@ -329,7 +329,7 @@ export class ApplicationLoadBalancerStack extends Stack {
 }
 
 export class RoleForEc2 extends Stack {
-  public readonly role: aws_iam.Role;
+  public readonly webRole : aws_iam.Role;
   public readonly asgRole: aws_iam.Role;
 
   constructor(scope: Construct, id: string, props: StackProps) {
@@ -397,7 +397,9 @@ export class RoleForEc2 extends Stack {
       })
     );
 
-    this.role = role;
+
+    this.webRole = role;
+    this.asgRole = asgRole
   }
 }
 

@@ -46,7 +46,7 @@ const aurora = new AuroraDbStack(app, "AuroraStack", {
 const server = new WebServerStack(app, "WebServerAurora", {
   vpc: network.vpc, 
   sg: network.webServerSG, 
-  role: role.role, 
+  role: role.webRole, 
   env: {
     region: REGION, 
     account: process.env.CDK_DEFAULT_ACCOUNT
