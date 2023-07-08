@@ -3,6 +3,7 @@
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # updated date: 07/07/2023
 # 1. get region and secret id from enviornment variables 
+# 2. hard code connection when not avaiable from secret values
 # =============================================================================
 import os
 import mysql.connector

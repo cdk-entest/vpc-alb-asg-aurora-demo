@@ -1,11 +1,11 @@
 # =============================================================================
-# author: haimtran     | created date: 20/06/2022
+# created date: 20/06/2022 by haimtran
 # 1. create connector
 # 2. create tables 
 # 3. show tables 
 # 4. write data to tables 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# updated date: 07/07/2023
+# updated date: 07/07/2023 by haimtran
 # 1. get region and secret id from enviornment variables 
 # 2. hard code connection when not avaiable from secret values
 # =============================================================================
@@ -16,6 +16,11 @@ import boto3
 import json
 import names
 import random
+
+# database connection 
+DB_HOST = "database-1.cluster-ckcjxpoafmdf.ap-southeast-1.rds.amazonaws.com"
+DB_PORT = 3306
+DB_NAME = "covid"
 
 # secret and region
 try:
@@ -37,11 +42,11 @@ print(secret_dic)
 
 # if host, dbname, port not in the dict 
 if ("port" not in secret_dic):
-    secret_dic["port"] = 3306
+    secret_dic["port"] = DB_PORT
 if ("host" not in secret_dic):
-    secret_dic["host"] = "database-1.cluster-ckcjxpoafmdf.ap-southeast-1.rds.amazonaws.com"
+    secret_dic["host"] = DB_HOST 
 if ("dbname" not in secret_dic):
-    secret_dic["dbname"] = "covid"
+    secret_dic["dbname"] = DB_NAME 
 
 # db connector
 conn = mysql.connector.connect(
