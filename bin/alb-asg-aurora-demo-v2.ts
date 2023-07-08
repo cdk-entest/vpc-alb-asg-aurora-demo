@@ -23,45 +23,49 @@ const network = new VpcAlbAuroraStack(app, "VpcStackAuroraDemo", {
   },
 });
 
-// role for ec2 webserver 
+// role for ec2 webserver
 const role = new RoleForEc2(app, "RoleForWebServerAurora", {
   env: {
-    region: REGION, 
-    account: process.env.CDK_DEFAULT_ACCOUNT
-  }
-})
+    region: REGION,
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+  },
+});
 
-// aurora cluster database 
+// aurora cluster database
 const aurora = new AuroraDbStack(app, "AuroraStack", {
-  vpc: network.vpc, 
-  dbSG: network.databaseSG, 
-  dbName: "covid", 
+  vpc: network.vpc,
+  dbSG: network.databaseSG,
+  dbName: "covid",
   env: {
-    region: REGION, 
-    account: process.env.CDK_DEFAULT_ACCOUNT
-  }
-})
+    region: REGION,
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+  },
+});
 
-// webserver 
+// webserver
 const server = new WebServerStack(app, "WebServerAurora", {
-  vpc: network.vpc, 
-  sg: network.webServerSG, 
-  role: role.role, 
+  vpc: network.vpc,
+  sg: network.webServerSG,
+  role: role.webRole,
   env: {
-    region: REGION, 
-    account: process.env.CDK_DEFAULT_ACCOUNT
-  }
-})
+    region: REGION,
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+  },
+});
 
-// load balancer 
+// load balancer
 const alb = new ApplicationLoadBalancerStack(app, "ApplicationStack", {
-  vpc: network.vpc, 
+  vpc: network.vpc,
+  albSG: network.albSG,
+  asgSG: network.asgSG,
+  asgRole: role.asgRole,
   env: {
-    region: REGION, 
-    account: process.env.CDK_DEFAULT_ACCOUNT
-  }
-})
+    region: REGION,
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+  },
+});
 
-// dependencies 
-server.addDependency(role)
-alb.addDependency(aurora)
+// dependencies
+server.addDependency(role);
+alb.addDependency(role);
+alb.addDependency(aurora);

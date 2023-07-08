@@ -8,6 +8,7 @@ import {
   aws_elasticloadbalancingv2,
   aws_autoscaling,
   CfnOutput,
+  aws_cloudwatch,
   Duration,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
@@ -22,6 +23,8 @@ export class VpcAlbAuroraStack extends Stack {
   public readonly vpc: aws_ec2.Vpc;
   public readonly databaseSG: aws_ec2.SecurityGroup;
   public readonly webServerSG: aws_ec2.SecurityGroup;
+  public readonly asgSG: aws_ec2.SecurityGroup 
+  public readonly albSG: aws_ec2.SecurityGroup 
 
   constructor(scope: Construct, id: string, props: VpcAlbAuroraStackProps) {
     super(scope, id, props);
@@ -64,6 +67,25 @@ export class VpcAlbAuroraStack extends Stack {
     webServerSG.addIngressRule(aws_ec2.Peer.anyIpv4(), aws_ec2.Port.tcp(80));
     webServerSG.addIngressRule(aws_ec2.Peer.anyIpv4(), aws_ec2.Port.tcp(22));
 
+    // security group for load balancer
+    const albSG = new aws_ec2.SecurityGroup(this, "SGForLoadBalancer", {
+      securityGroupName: "SGForLoadBalancer",
+      vpc: vpc,
+    });
+
+    albSG.addIngressRule(aws_ec2.Peer.anyIpv4(), aws_ec2.Port.tcp(80));
+
+    // security group for autoscaling group
+    const asgSG = new aws_ec2.SecurityGroup(this, "SGForAutoScaling", {
+      securityGroupName: "SGForAutoScaling",
+      vpc: vpc,
+    });
+
+    asgSG.addIngressRule(
+      aws_ec2.Peer.securityGroupId(albSG.securityGroupId),
+      aws_ec2.Port.tcp(80)
+    );
+
     // security group for db
     const databaseSG = new aws_ec2.SecurityGroup(
       this,
@@ -76,6 +98,11 @@ export class VpcAlbAuroraStack extends Stack {
 
     databaseSG.addIngressRule(
       aws_ec2.Peer.securityGroupId(webServerSG.securityGroupId),
+      aws_ec2.Port.tcp(3306)
+    );
+
+    databaseSG.addIngressRule(
+      aws_ec2.Peer.securityGroupId(asgSG.securityGroupId),
       aws_ec2.Port.tcp(3306)
     );
 
@@ -92,6 +119,8 @@ export class VpcAlbAuroraStack extends Stack {
     this.vpc = vpc;
     this.databaseSG = databaseSG;
     this.webServerSG = webServerSG;
+    this.asgSG = asgSG
+    this.albSG = albSG
   }
 }
 
@@ -178,6 +207,9 @@ export class AuroraDbStack extends Stack {
 
 interface ApplicationLoadBalancerStackProps extends StackProps {
   vpc: aws_ec2.Vpc;
+  asgSG: aws_ec2.SecurityGroup;
+  albSG: aws_ec2.SecurityGroup;
+  asgRole: aws_iam.Role;
 }
 
 export class ApplicationLoadBalancerStack extends Stack {
@@ -193,42 +225,11 @@ export class ApplicationLoadBalancerStack extends Stack {
       (subnet) => subnet.subnetId
     );
 
-    // role for ec2 to communicate with ssm
-    const role = new aws_iam.Role(this, `RoleForEc2AsgToAccessSSM`, {
-      roleName: `RoleForEc2AsgToAccessSSM`,
-      assumedBy: new aws_iam.ServicePrincipal("ec2.amazonaws.com"),
-    });
-
-    // download some web data from s3
-    role.attachInlinePolicy(
-      new aws_iam.Policy(this, `PolicyForEc2AsgToReadS3`, {
-        policyName: `PolicyForEc2AsgToReadS3`,
-        statements: [
-          new aws_iam.PolicyStatement({
-            effect: aws_iam.Effect.ALLOW,
-            actions: ["s3:*"],
-            resources: ["arn:aws:s3:::haimtran-workspace/*"],
-          }),
-          new aws_iam.PolicyStatement({
-            effect: aws_iam.Effect.ALLOW,
-            actions: ["secretsmanager:*"],
-            resources: ["*"],
-          }),
-        ],
-      })
-    );
-
-    role.addManagedPolicy(
-      aws_iam.ManagedPolicy.fromManagedPolicyArn(
-        this,
-        `PolicyForEc2AsgToAccessSSM`,
-        "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-      )
-    );
-
     // auto scaling group
-    const asg = new aws_autoscaling.AutoScalingGroup(this, "ASG", {
+    const asg = new aws_autoscaling.AutoScalingGroup(this, "ASGForAuroraDemo", {
+      autoScalingGroupName: "ASGForAuroraDemo",
       vpc,
+      securityGroup: props.asgSG,
       instanceType: aws_ec2.InstanceType.of(
         aws_ec2.InstanceClass.T2,
         aws_ec2.InstanceSize.SMALL
@@ -241,8 +242,8 @@ export class ApplicationLoadBalancerStack extends Stack {
         cachedInContext: true,
       }),
       minCapacity: 2,
-      maxCapacity: 3,
-      role: role,
+      maxCapacity: 10,
+      role: props.asgRole,
       vpcSubnets: {
         // subnetType: aws_ec2.SubnetType.PRIVATE_WITH_EGRESS,
         // availabilityZones: props.availabilityZones,
@@ -266,10 +267,16 @@ export class ApplicationLoadBalancerStack extends Stack {
     // application load balancer
     const alb = new aws_elasticloadbalancingv2.ApplicationLoadBalancer(
       this,
-      "ALB",
+      "LoadBalancerAuroraDemo",
       {
+        loadBalancerName: "LoadBalancerAuroraDemo",
         vpc,
+        vpcSubnets: {
+          subnetType: aws_ec2.SubnetType.PUBLIC,
+        },
         internetFacing: true,
+        securityGroup: props.albSG,
+        deletionProtection: false,
       }
     );
 
@@ -285,16 +292,80 @@ export class ApplicationLoadBalancerStack extends Stack {
 
     listener.connections.allowDefaultPortFromAnyIpv4("Open to the world");
 
-    asg.scaleOnRequestCount("AmodestLoad", {
+    asg.scaleOnRequestCount("ScaleOnRequestCount", {
       targetRequestsPerMinute: 60,
+    });
+
+    // scaling policy - step scaling
+    const metric = new aws_cloudwatch.Metric({
+      metricName: "CPUUtilization",
+      namespace: "AWS/EC2",
+      statistic: "Average",
+      period: Duration.minutes(1),
+      dimensionsMap: {
+        AutoScalingGroupName: asg.autoScalingGroupName,
+      },
+    });
+
+    asg.scaleOnMetric("StepScaleOnCPUUsage", {
+      metric: metric,
+      scalingSteps: [
+        {
+          upper: 1,
+          change: -1,
+        },
+        {
+          lower: 10,
+          change: +1,
+        },
+        {
+          lower: 60,
+          change: +3,
+        },
+      ],
+      adjustmentType: aws_autoscaling.AdjustmentType.CHANGE_IN_CAPACITY,
     });
   }
 }
 
 export class RoleForEc2 extends Stack {
   public readonly role: aws_iam.Role;
+  public readonly asgRole: aws_iam.Role;
+
   constructor(scope: Construct, id: string, props: StackProps) {
     super(scope, id, props);
+
+    const asgRole = new aws_iam.Role(this, "RoleForAsgAuroraDemo", {
+      roleName: "RoleForAsgAuroraDemo",
+      assumedBy: new aws_iam.ServicePrincipal("ec2.amazonaws.com"),
+    });
+
+    asgRole.addManagedPolicy(
+      aws_iam.ManagedPolicy.fromManagedPolicyArn(
+        this,
+        `PolicyForEc2AsgToAccessSSM`,
+        "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      )
+    );
+
+    asgRole.addManagedPolicy(
+      aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "AWSCloudFormationReadOnlyAccess"
+      )
+    );
+
+    asgRole.attachInlinePolicy(
+      new aws_iam.Policy(this, "PolicyForAsgToGetSecretDb", {
+        policyName: "PolicyForAsgToGetSecretDb",
+        statements: [
+          new aws_iam.PolicyStatement({
+            effect: aws_iam.Effect.ALLOW,
+            actions: ["secretsmanager:GetSecretValue"],
+            resources: ["arn:aws:secretsmanager:*"],
+          }),
+        ],
+      })
+    );
 
     const role = new aws_iam.Role(this, "RoleForWebServerAuroraDemo", {
       roleName: "RoleForWebServerAuroraDemo",
