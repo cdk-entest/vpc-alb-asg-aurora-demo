@@ -1,19 +1,28 @@
+# =============================================================================
+# author: haimtran     | created date: 20/06/2022
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# updated date: 07/07/2023
+# 1. get region and secret id from enviornment variables 
+# =============================================================================
+import os
 import mysql.connector
 import boto3
 import json
 from flask import Flask, render_template
 from flask_table import Table, Col
 
-# scret manager => better in environment vars
-SECRET_ID = "arn:aws:secretsmanager:us-east-1:392194582387:secret:AuroraDbStackIcaDatabaseSec-rEIc0yNQiqeT-876u2Z"
-
-
-# region
-REGION = "us-east-1"
-
+try:
+    SECRET_ID = os.environ["SECRET_ID"]
+    REGION = os.environ["REGION"]
+except:
+    SECRET_ID = "rds!cluster-9f91a71d-7918-4dc4-9b4c-4754a2d39f8e"
+    REGION = "ap-southeast-1"
 
 class ItemTable(Table):
-    """ """
+    """
+    flask app generate tables
+    TODO: tailwind
+    """
 
     id = Col("Id")
     name = Col("Name")
@@ -22,7 +31,9 @@ class ItemTable(Table):
 
 
 class Item(object):
-    """ """
+    """
+    table item
+    """
 
     def __init__(self, id, name, age, time):
         """ """

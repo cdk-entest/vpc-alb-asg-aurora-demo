@@ -16,10 +16,10 @@ import names
 import random
 
 # scret manager => better in environment vars
-SECRET_ID = "arn:aws:secretsmanager:us-east-1:392194582387:secret:AuroraDbStackIcaDatabaseSec-rEIc0yNQiqeT-876u2Z"
+SECRET_ID = "rds!cluster-9f91a71d-7918-4dc4-9b4c-4754a2d39f8e"
 
 # region
-REGION = "us-east-1"
+REGION = "ap-southeast-1"
 
 # sm client
 secrete_client = boto3.client("secretsmanager", region_name=REGION)
@@ -30,6 +30,14 @@ secret = secrete_client.get_secret_value(SecretId=SECRET_ID)
 # parse db information
 secret_dic = json.loads(secret["SecretString"])
 print(secret_dic)
+
+# if host, dbname, port not in the dict 
+if ("port" not in secret_dic):
+    secret_dic["port"] = 3306
+if ("host" not in secret_dic):
+    secret_dic["host"] = "database-1.cluster-ckcjxpoafmdf.ap-southeast-1.rds.amazonaws.com"
+if ("dbname" not in secret_dic):
+    secret_dic["dbname"] = "covid"
 
 # db connector
 conn = mysql.connector.connect(
