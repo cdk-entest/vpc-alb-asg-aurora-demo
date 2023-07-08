@@ -68,3 +68,4 @@ const alb = new ApplicationLoadBalancerStack(app, "ApplicationStack", {
 // dependencies 
 server.addDependency(role)
 alb.addDependency(aurora)
+alb.addDependency(role)
