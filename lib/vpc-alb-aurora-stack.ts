@@ -14,7 +14,7 @@ import * as fs from "fs";
 
 interface VpcAlbAuroraStackProps extends StackProps {
   vpcName: string;
-  cidir: string;
+  cidr: string;
 }
 
 export class VpcAlbAuroraStack extends Stack {
@@ -26,7 +26,7 @@ export class VpcAlbAuroraStack extends Stack {
     // create a new vpc
     const vpc = new aws_ec2.Vpc(this, "VpcWithoutNat", {
       vpcName: props.vpcName,
-      cidr: props.cidir,
+      cidr: props.cidr,
       enableDnsHostnames: true,
       enableDnsSupport: true,
       subnetConfiguration: [
@@ -279,7 +279,7 @@ export class ApplicationLoadBalancerStack extends Stack {
       },
     });
 
-    asg.addUserData(fs.readFileSync("./lib/script/user-data.sh", "utf8"));
+    asg.addUserData(fs.readFileSync("./lib/script/user-data-2.sh", "utf8"));
 
     // application load balancer
     const alb = new aws_elasticloadbalancingv2.ApplicationLoadBalancer(
