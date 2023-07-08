@@ -93,7 +93,8 @@ export class AuroraDbStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       defaultDatabaseName: props.dbName,
       engine: aws_rds.DatabaseClusterEngine.auroraMysql({
-        version: aws_rds.AuroraMysqlEngineVersion.VER_2_08_1,
+        // 
+        version: aws_rds.AuroraMysqlEngineVersion.VER_2_07_2,
       }),
       credentials: aws_rds.Credentials.fromGeneratedSecret("admin"),
       instanceProps: {
