@@ -100,6 +100,9 @@ const cluster = new aws_rds.DatabaseCluster(this, "IcaDatabase", {
 
 ## Load Balancer
 
+![alb-aurora](https://github.com/cdk-entest/vpc-alb-asg-aurora-demo/assets/20411077/6264e6bd-9b10-466c-b92b-3c760754ece9)
+
+
 Let create a iam role for EC2 to download from S3, access SSM, and Secret Mangement
 
 ```tsx
