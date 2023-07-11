@@ -19,7 +19,7 @@ date: 2022-06-23
 
 ## Architectrure
 
-![aws_devops-ica drawio](https://user-images.githubusercontent.com/20411077/170316806-737ff153-23df-456c-bee4-2812ab5e1b8a.png)
+![alb-aurora](https://github.com/cdk-entest/vpc-alb-asg-aurora-demo/assets/20411077/6264e6bd-9b10-466c-b92b-3c760754ece9)
 
 ## Network Stack
 
@@ -99,10 +99,6 @@ const cluster = new aws_rds.DatabaseCluster(this, "IcaDatabase", {
 ```
 
 ## Load Balancer
-
-![alb-aurora](https://github.com/cdk-entest/vpc-alb-asg-aurora-demo/assets/20411077/6264e6bd-9b10-466c-b92b-3c760754ece9)
-
-
 Let create a iam role for EC2 to download from S3, access SSM, and Secret Mangement
 
 ```tsx
@@ -298,6 +294,9 @@ stmt_select = "SELECT id, name, age, time FROM employees ORDER BY id"
     for row in cur.fetchall():
         print(row)
 ```
+
+## Previous Version 
+![aws_devops-ica drawio](https://user-images.githubusercontent.com/20411077/170316806-737ff153-23df-456c-bee4-2812ab5e1b8a.png)
 
 ## Reference 
 
