@@ -19,7 +19,7 @@ date: 2022-06-23
 
 ## Architectrure
 
-![aws_devops-ica drawio](https://user-images.githubusercontent.com/20411077/170316806-737ff153-23df-456c-bee4-2812ab5e1b8a.png)
+![alb-aurora](https://github.com/cdk-entest/vpc-alb-asg-aurora-demo/assets/20411077/b8efc78d-d286-484e-bf17-44e6a03f8aef)
 
 ## Network Stack
 
@@ -295,6 +295,10 @@ stmt_select = "SELECT id, name, age, time FROM employees ORDER BY id"
     for row in cur.fetchall():
         print(row)
 ```
+
+## Previous Version 
+
+![aws_devops-ica drawio](https://user-images.githubusercontent.com/20411077/170316806-737ff153-23df-456c-bee4-2812ab5e1b8a.png)
 
 ## Reference
 
