@@ -13,7 +13,7 @@ from flask import Flask, render_template
 from flask_table import Table, Col
 
 # database connection 
-DB_HOST = "demo.cluster-ckcjxpoafmdf.ap-southeast-1.rds.amazonaws.com"
+DB_HOST = "demo.cluster-c9o6e6mmen8g.ap-southeast-1.rds.amazonaws.com"
 DB_PORT = 3306
 DB_NAME = "covid"
 
