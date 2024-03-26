@@ -122,6 +122,11 @@ def hello_world():
     return app.send_static_file("index.html")
 
 
+@app.route("/book")
+def hello_world():
+    return app.send_static_file("book.html")
+
+
 @app.route("/")
 def query_data():
     # fetch data
