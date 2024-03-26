@@ -123,7 +123,7 @@ def hello_world():
 
 
 @app.route("/book")
-def hello_world():
+def book():
     return app.send_static_file("book.html")
 
 
